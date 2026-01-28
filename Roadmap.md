@@ -1,3 +1,22 @@
+---
+
+## Table of Contents
+- [ROOT ACCESS — Dev Lead Roadmap (Big Picture + Step-by-Step)](#root-access--dev-lead-roadmap-big-picture--step-by-step)
+  - [Quick Knowledge](#quick-knowledge)
+  - [Big Picture (Phases)](#big-picture-phases)
+    - [Phase 1 — Foundation / Proof of Architecture (Non-Blocking Core)](#phase-1--foundation--proof-of-architecture-non-blocking-core)
+    - [Phase 2 — Content Pipeline + UX Polish](#phase-2--content-pipeline--ux-polish)
+    - [Phase 3 — Real Audio + Expansion Systems](#phase-3--real-audio--expansion-systems)
+    - [Phase 4 Preview (What We’re Implementing)](#phase-4-preview-what-were-implementing)
+    - [Phase 5 Preview (What’s Next After Phase 4)](#phase-5-preview-whats-next-after-phase-4)
+  - [Multi-File Structure (Phase 1 Target Layout)](#multi-file-structure-phase-1-target-layout)
+  - [Phase 1 — Step-by-Step (Multi-File)](#phase-1--step-by-step-multi-file)
+  - [Phase 2 — Content Pipeline + UX Polish (Step-by-step)](#phase-2--content-pipeline--ux-polish-step-by-step)
+  - [Phase 3 — Real Audio + Expansion Systems (Step-by-step)](#phase-3--real-audio--expansion-systems-step-by-step)
+  - [Phase 4 Step-by-Step (Dev Lead Plan)](#phase-4-step-by-step-dev-lead-plan)
+
+---
+
 # ROOT ACCESS — Dev Lead Roadmap (Big Picture + Step-by-Step)
 
 This roadmap is designed to avoid dead ends and keep the engine future-proof (ElevenLabs swap, JSON scenes, more UI polish) while staying beginner-friendly.
