@@ -1,5 +1,3 @@
----
-
 ## Table of Contents
 - [ROOT ACCESS — Dev Lead Roadmap (Big Picture + Step-by-Step)](#root-access--dev-lead-roadmap-big-picture--step-by-step)
   - [Quick Knowledge](#quick-knowledge)
