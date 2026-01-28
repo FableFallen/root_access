@@ -1,0 +1,98 @@
+{
+    "schema_version": 1,
+    "scene_id": "phase3_validation",
+    "steps": [
+        {
+            "type": "print",
+            "text": ">> DIAGNOSTIC MODE ENGAGED.",
+            "channel": "system"
+        },
+        {
+            "type": "sfx",
+            "sfx_id": "boot_hum"
+        },
+        {
+            "type": "wait",
+            "seconds": 1.0
+        },
+        {
+            "type": "print",
+            "text": "Testing Inventory System...",
+            "channel": "info"
+        },
+        {
+            "type": "give_item",
+            "item_id": "debug_tool",
+            "qty": 1
+        },
+        {
+            "type": "wait",
+            "seconds": 0.5
+        },
+        {
+            "type": "print",
+            "text": "Testing Quest System...",
+            "channel": "info"
+        },
+        {
+            "type": "quest_update",
+            "quest_id": "sys_check",
+            "status": "active"
+        },
+        {
+            "type": "wait",
+            "seconds": 0.5
+        },
+        {
+            "type": "voice",
+            "text": "Warning. Live fire exercise initiated.",
+            "voice_id": "system"
+        },
+        {
+            "type": "combat_start",
+            "enemy_name": "Training Drone",
+            "hp": 15
+        },
+        {
+            "type": "print",
+            "text": ">> SIMULATION COMPLETE.",
+            "channel": "system"
+        },
+        {
+            "type": "quest_update",
+            "quest_id": "sys_check",
+            "status": "completed"
+        },
+        {
+            "type": "typewrite",
+            "text": "TYPE 'MENU' TO RETURN.",
+            "channel": "terminal",
+            "speed": 50
+        },
+        {
+            "type": "require_command",
+            "commands": [
+                "menu",
+                "back"
+            ],
+            "fail_msg": "Type MENU to exit diagnostic."
+        },
+        {
+            "type": "set_flag",
+            "key": "return_to_menu",
+            "value": true
+        },
+        {
+            "type": "branch",
+            "if": {
+                "flag_equals": [
+                    "return_to_menu",
+                    true
+                ]
+            },
+            "then": {
+                "goto_scene": "main_menu"
+            }
+        }
+    ]
+}

@@ -125,6 +125,10 @@
             "text": "END OF DEMO.",
             "speed": 10,
             "channel": "system"
+        },
+        {
+            "type": "sfx",
+            "sfx_id": "boot_hum"
         }
     ]
 }

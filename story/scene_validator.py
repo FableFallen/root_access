@@ -19,24 +19,18 @@ class SceneValidator:
         "print": ["text"],
         "typewrite": ["text"],
         "wait": ["seconds"],
-        "voice": ["text"],
-        # CHANGED: "output_flag" is optional, so we don't enforce it in REQUIRED, 
-        # but we shouldn't reject it if strict checking was logic-based.
-        # Since my simple validator only checks for MISSING required fields, 
-        # adding an optional field doesn't break anything unless we checked for 'unknown' fields.
-        
-        # My previous validator checked for UNKNOWN fields in _validate_step:
-        # if field not in step: raise ...
-        
-        # Wait, the previous validator checked REQUIRED fields. 
-        # It did NOT reject extra fields in the simple version I wrote? 
-        # Let's check the code I generated in Step 2.
-        # "required = self.STEP_REQUIREMENTS[step_type] ... for field in required: if field not in step..."
-        # It does NOT forbid extra fields.
-        
+        "voice": ["text"],        
         "require_command": ["commands"], # output_flag is optional
         "set_flag": ["key", "value"],
-        "branch": ["if", "then"] 
+        "branch": ["if", "then"],
+        "sfx": ["sfx_id"],
+
+        # --- NEW RPG TYPES ---
+        "give_item": ["item_id"],   # optional: qty
+        "remove_item": ["item_id"], # optional: qty
+        "quest_update": ["quest_id", "status"], # "active", "completed"
+        "combat_start": ["enemy_name", "hp"],
+        "combat_end": [] # No args required
     }
 
     def validate(self, data: Dict[str, Any]):

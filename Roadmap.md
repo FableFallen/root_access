@@ -1,11 +1,14 @@
 # ROOT ACCESS — Dev Lead Roadmap (Big Picture + Step-by-Step)
 
 This roadmap is designed to avoid dead ends and keep the engine future-proof (ElevenLabs swap, JSON scenes, more UI polish) while staying beginner-friendly.
+
+---
+
 QUICK KNOWLEDGE:
+'$env:ELEVENLABS_API_KEY="paste_your_key_here"'
 Red error text
 White voice text
 white info text 
----
 
 ## Big Picture (Phases)
 
@@ -465,5 +468,194 @@ Upgrade `require_command` so it can optionally store the accepted command into a
 - optional local TTS
 - SFX playback (main-thread safe)
 - combat / inventory / quests
+
+---
+
+## Phase 3 — Real Audio + Expansion Systems (Step-by-step)
+
+---
+
+### Step 1 — Audio Backend Interface Harden (No behavior change yet)
+**Files:**
+- `core/audio_engine.py` (update)
+- `core/models.py` (update if AudioJob/AudioEvent live here)
+
+**Implement:**
+- Ensure AudioEngine is truly backend-agnostic:
+  - `AudioBackendBase.prepare(job) -> PreparedAudio` (or returns a filepath/bytes)
+  - `AudioBackendBase.cache_key(job) -> str`
+- Keep the hard rule:
+  - worker thread may do network + file I/O
+  - **main thread** is the only place that calls `pygame.mixer.*` playback APIs
+- Add explicit events:
+  - `AUDIO_READY` (has filepath or bytes reference)
+  - `AUDIO_ERROR`
+- Add a config switch:
+  - `AUDIO_BACKEND = "mock" | "elevenlabs" | "local_tts"`
+
+**Success criteria:**
+- Mock backend still works exactly like before
+- AudioEngine can emit “ready-to-play” events without playing anything itself
+
+---
+
+### Step 2 — Caching Layer (Text → Audio file)
+**Files:**
+- `core/audio_cache.py` (new)
+- `core/audio_engine.py` (update)
+- `core/config.py` (update)
+
+**Implement:**
+- Create a cache directory:
+  - `content/audio_cache/`
+- Cache key strategy:
+  - hash of: backend name + voice_id + model_id + text (+ settings)
+  - e.g., SHA256 → `{hash}.mp3`
+- Cache API:
+  - `has(key)`, `path_for(key)`, `store_bytes(key, bytes)`
+- AudioEngine workflow:
+  - on enqueue TTS job:
+    - if cached → emit `AUDIO_READY` immediately with cached filepath
+    - else → worker downloads/prepares audio, stores to cache, emits `AUDIO_READY`
+
+**Success criteria:**
+- Repeating the same TTS line does not re-download/re-generate
+- Cache files persist between runs
+
+---
+
+### Step 3 — ElevenLabs Backend (Network TTS in worker thread)
+**Files:**
+- `core/elevenlabs_backend.py` (new)
+- `core/audio_engine.py` (update)
+- `core/config.py` (update)
+
+**Implement:**
+- Add ElevenLabs backend that:
+  - runs in worker thread
+  - calls ElevenLabs API to get audio bytes (mp3)
+  - never calls pygame
+  - returns/stores bytes via cache layer
+- Config values (do not hardcode secrets):
+  - `ELEVENLABS_API_KEY` read from environment variable
+  - default `voice_id`, `model_id`
+- Error handling:
+  - retries (lightweight, e.g., 2 tries)
+  - emit `AUDIO_ERROR` with reason on failure
+
+**Success criteria:**
+- With valid key, voice lines are generated and cached to disk
+- With invalid/missing key, engine fails gracefully (logs error, continues)
+
+---
+
+### Step 4 — Main-thread-safe Playback (pygame.mixer integration)
+**Files:**
+- `core/audio_player.py` (new) *(recommended)* OR `core/audio_engine.py` (update)
+- `main.py` (update loop)
+- `core/config.py` (update)
+
+**Implement:**
+- Initialize `pygame.mixer` on main thread
+- Create `AudioPlayer` (main thread only):
+  - `play_file(path)`
+  - optional queue for sequential playback
+  - emits events like `PLAY_STARTED`, `PLAY_FINISHED` (poll or callbacks)
+- In main loop:
+  - poll AudioEngine events
+  - when `AUDIO_READY(path)` arrives → pass to AudioPlayer to play
+- Decide policy:
+  - allow overlap? (usually no)
+  - interrupt? (later)
+
+**Success criteria:**
+- Audio plays without freezing input/rendering
+- No mixer calls occur in worker thread (verify)
+
+---
+
+### Step 5 — Optional Local TTS Backend (Offline fallback)
+**Files:**
+- `core/local_tts_backend.py` (new)
+- `core/audio_engine.py` (update)
+- `core/config.py` (update)
+
+**Implement:**
+Pick one approach:
+- **Simple offline**: `pyttsx3` (easy, voice quality varies)
+- **Higher quality**: Coqui TTS (heavier setup)
+
+Rules:
+- generation/prep in worker thread
+- output to cache as wav/mp3 (depending on tool)
+- playback still via main-thread AudioPlayer
+
+**Success criteria:**
+- You can switch backend to `local_tts` without changing SceneRunner/main loop
+- No network required for voice output
+
+---
+
+### Step 6 — SFX Playback (Main-thread safe, data-driven)
+**Files:**
+- `core/sfx_library.py` (new)
+- `core/audio_player.py` (update)
+- `core/audio_engine.py` (update AudioJob kinds)
+- `content/sfx/` (new folder, Phase 3 assets)
+
+**Implement:**
+- Add `AudioJob(kind="sfx", sfx_id="boot_hum")`
+- `SFXLibrary` maps `sfx_id` → filepath
+- SFX playback via AudioPlayer on main thread
+- Keep SFX optional in Phase 3 (engine runs without assets)
+
+**Success criteria:**
+- Scene can trigger SFX without blocking
+- Missing SFX logs a warning, does not crash
+
+---
+
+### Step 7 — Combat / Inventory / Quests (Core systems, minimal first pass)
+**Files:**
+- `core/player.py` (new) *(or in models)*
+- `core/inventory.py` (new)
+- `core/quests.py` (new)
+- `story/scene_runner.py` (update)
+- `story/scene_types.py` (update)
+- `content/scenes/*.json` (new scenes)
+
+**Implement (Minimum Viable RPG Layer):**
+**Inventory**
+- `items: dict[item_id, quantity]`
+- steps:
+  - `give_item`, `remove_item`, `has_item` condition support
+
+**Quests**
+- `quests: dict[quest_id, status]` (inactive/active/complete)
+- steps:
+  - `start_quest`, `complete_quest`
+
+**Combat (minimal command loop)**
+- introduce `game_state.mode = "combat"`
+- a tiny turn system:
+  - player chooses commands: `ENGAGE`, `SCAN`, `FLEE`
+  - enemy has HP, player has HP
+  - damage uses simple dice/random or fixed numbers
+- steps:
+  - `enter_combat`, `combat_turn`, `exit_combat`
+
+**Success criteria:**
+- A scene can give an item, set a quest flag, and branch on it
+- A simple combat encounter runs fully through terminal commands and returns to terminal mode
+
+---
+
+## Phase 3 Final Checklist (Must Pass)
+- [ ] Backend abstraction supports mock/elevenlabs/local_tts without main-loop rewrite
+- [ ] Cache prevents re-generating the same TTS lines
+- [ ] ElevenLabs uses env var key and fails gracefully
+- [ ] All playback uses main-thread AudioPlayer (`pygame.mixer` safe)
+- [ ] SFX system triggers by id and doesn’t crash if missing
+- [ ] Minimal inventory/quest/combat systems exist and are data-driven
 
 ---
