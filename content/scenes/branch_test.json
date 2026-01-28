@@ -1,0 +1,45 @@
+{
+    "schema_version": 1,
+    "scene_id": "branch_test",
+    "steps": [
+        {
+            "type": "print",
+            "text": "Starting Branch Test...",
+            "channel": "system"
+        },
+        {
+            "type": "set_flag",
+            "key": "test_complete",
+            "value": true
+        },
+        {
+            "type": "branch",
+            "if": {
+                "flag_equals": [
+                    "test_complete",
+                    true
+                ]
+            },
+            "then": {
+                "goto_step": 4
+            },
+            "else": {
+                "goto_step": 5
+            }
+        },
+        {
+            "type": "print",
+            "text": "FAIL: Branch skipped correctly.",
+            "channel": "error"
+        },
+        {
+            "type": "print",
+            "text": "SUCCESS: Branch jumped over failure.",
+            "channel": "terminal"
+        },
+        {
+            "type": "wait",
+            "seconds": 2.0
+        }
+    ]
+}

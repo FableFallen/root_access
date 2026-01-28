@@ -1,0 +1,137 @@
+{
+    "tier": 0,
+    "flags": {
+        "menu_choice": "start"
+    },
+    "mode": "terminal",
+    "current_scene_id": "boot_sequence",
+    "scene_cursor": 19,
+    "history": [
+        {
+            "text": "========================================",
+            "channel": "system",
+            "timestamp": 1769579500.0305893,
+            "style": null
+        },
+        {
+            "text": "      R O O T   A C C E S S",
+            "channel": "terminal",
+            "timestamp": 1769579500.04524,
+            "style": null
+        },
+        {
+            "text": "========================================",
+            "channel": "system",
+            "timestamp": 1769579500.061304,
+            "style": null
+        },
+        {
+            "text": "COMMANDS: [START] / [QUIT]",
+            "channel": "terminal",
+            "timestamp": 1769579500.6039433,
+            "style": null
+        },
+        {
+            "text": "> start",
+            "channel": "terminal",
+            "timestamp": 1769579505.6753883,
+            "style": null
+        },
+        {
+            "text": "SYSTEM REBOOT...",
+            "channel": "system",
+            "timestamp": 1769579505.7074013,
+            "style": null
+        },
+        {
+            "text": "UPLINK TYPE: REMOTE CONTROL.",
+            "channel": "system",
+            "timestamp": 1769579507.5266683,
+            "style": null
+        },
+        {
+            "text": "ERROR: ADMIN PRIVILEGES CORRUPTED.",
+            "channel": "error",
+            "timestamp": 1769579509.4745915,
+            "style": null
+        },
+        {
+            "text": "TYPE 'BOOT' TO SYNCHRONIZE.",
+            "channel": "terminal",
+            "timestamp": 1769579510.8455217,
+            "style": null
+        },
+        {
+            "text": "> save",
+            "channel": "terminal",
+            "timestamp": 1769579521.8830845,
+            "style": null
+        },
+        {
+            "text": "GAME LOADED [save1.json]",
+            "channel": "system",
+            "timestamp": 1769579551.5812674,
+            "style": null
+        },
+        {
+            "text": "System requires manual BOOT command.",
+            "channel": "error",
+            "timestamp": 1769579551.5812721,
+            "style": null
+        },
+        {
+            "text": "> boot",
+            "channel": "terminal",
+            "timestamp": 1769579564.1426644,
+            "style": null
+        },
+        {
+            "text": ">> SYNCHRONIZATION COMPLETE.",
+            "channel": "system",
+            "timestamp": 1769579564.1591675,
+            "style": null
+        },
+        {
+            "text": "WARNING: VESSEL HEART RATE 0 BPM.",
+            "channel": "error",
+            "timestamp": 1769579565.2042422,
+            "style": null
+        },
+        {
+            "text": "ACTION REQUIRED: JUMPSTART HEART.",
+            "channel": "terminal",
+            "timestamp": 1769579565.2207384,
+            "style": null
+        },
+        {
+            "text": "> jumpstart",
+            "channel": "terminal",
+            "timestamp": 1769579569.8437161,
+            "style": null
+        },
+        {
+            "text": ">> VOLTAGE SENT. HEART RATE: 120 BPM.",
+            "channel": "system",
+            "timestamp": 1769579569.860322,
+            "style": null
+        },
+        {
+            "text": "ALERT: HOSTILE ENTITY DETECTED (GOBLIN).",
+            "channel": "error",
+            "timestamp": 1769579570.9074588,
+            "style": null
+        },
+        {
+            "text": "TACTICAL OPTION: [ENGAGE]",
+            "channel": "terminal",
+            "timestamp": 1769579570.9243765,
+            "style": null
+        },
+        {
+            "text": "> save",
+            "channel": "terminal",
+            "timestamp": 1769579573.8590877,
+            "style": null
+        }
+    ]
+}

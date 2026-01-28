@@ -7,18 +7,31 @@ from core.config import GlobalConfig
 
 @dataclass
 class LogEntry:
-    """
-    A single line of output in the terminal history.
-    """
     text: str
-    channel: str = "terminal"  # "terminal", "voice", "narration", "system", "error"
+    channel: str = "terminal"
     timestamp: float = field(default_factory=time.time)
-    style: Optional[str] = None  # Future: "dim", "bold", etc.
+    style: Optional[str] = None
 
+    def to_dict(self) -> dict:
+        return {
+            "text": self.text,
+            "channel": self.channel,
+            "timestamp": self.timestamp,
+            "style": self.style
+        }
+
+    @staticmethod
+    def from_dict(data: dict) -> 'LogEntry':
+        return LogEntry(
+            text=data.get("text", ""),
+            channel=data.get("channel", "terminal"),
+            timestamp=data.get("timestamp", 0.0),
+            style=data.get("style")
+        )
 @dataclass
 class UIState:
     """
-    Pure UI/Presentation state. Resetting this does not affect narrative progress.
+    Pure UI/Presentation state.
     """
     # Input field
     input_buffer: str = ""
@@ -26,44 +39,31 @@ class UIState:
     cursor_timer_ms: int = 0
     
     # Typewriter Effect State
-    typed_line_partial: str = ""  # The characters currently visible
+    typed_line_partial: str = ""
     typewriter_active: bool = False
-    target_text_full: str = ""    # The full line we are revealing
+    target_text_full: str = ""
     typewriter_timer_ms: int = 0
     typewriter_index: int = 0
+    
+    # --- NEW: Scroll & History ---
+    scroll_offset: int = 0  # Number of LogEntries to skip from the bottom
+    
+    command_history: List[str] = field(default_factory=list)
+    history_view_index: int = 0 # Tracks position in history while cycling
 
 class GameState:
-    """
-    The World + Narrative State.
-    Maintains the 'Truth' of the game session.
-    """
     def __init__(self, config: GlobalConfig):
         self.config = config
-        
-        # Access Level
-        self.tier: int = 0  # 0: Guest, 1: User, 2: Admin
-        
-        # World State (Flags)
+        self.tier: int = 0
         self.flags: Dict[str, Any] = {}
-        
-        # Operational Mode
-        self.mode: str = "terminal"  # "cutscene", "terminal", "combat", "locked"
-        
-        # Narrative Progression
-        self.current_scene_id: str = "boot"
+        self.mode: str = "terminal"
+        self.current_scene_id: str = "boot_sequence"
         self.scene_cursor: int = 0
-        
-        # Output History
         self.history: List[LogEntry] = []
 
     def append_history(self, text: str, channel: str = "terminal", style: str = None):
-        """
-        Adds a log entry and adheres to the history truncation rule.
-        """
         entry = LogEntry(text=text, channel=channel, style=style)
         self.history.append(entry)
-        
-        # Enforce truncation
         if len(self.history) > self.config.MAX_HISTORY_LINES:
             excess = len(self.history) - self.config.MAX_HISTORY_LINES
             self.history = self.history[excess:]
@@ -73,3 +73,26 @@ class GameState:
 
     def get_flag(self, key: str, default: Any = None) -> Any:
         return self.flags.get(key, default)
+
+    def to_dict(self) -> dict:
+        """Serialize critical state."""
+        return {
+            "tier": self.tier,
+            "flags": self.flags,
+            "mode": self.mode,
+            "current_scene_id": self.current_scene_id,
+            "scene_cursor": self.scene_cursor,
+            # Persist the last 50 lines to keep save files small but providing context
+            "history": [e.to_dict() for e in self.history[-50:]] 
+        }
+
+    def restore_from_dict(self, data: dict):
+        """Update state in-place from loaded data."""
+        self.tier = data.get("tier", 0)
+        self.flags = data.get("flags", {})
+        self.mode = data.get("mode", "terminal")
+        self.current_scene_id = data.get("current_scene_id", "boot_sequence")
+        self.scene_cursor = data.get("scene_cursor", 0)
+        
+        raw_history = data.get("history", [])
+        self.history = [LogEntry.from_dict(item) for item in raw_history]

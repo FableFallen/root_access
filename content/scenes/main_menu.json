@@ -1,0 +1,87 @@
+{
+    "schema_version": 1,
+    "scene_id": "main_menu",
+    "steps": [
+        {
+            "type": "print",
+            "text": "========================================",
+            "channel": "system"
+        },
+        {
+            "type": "print",
+            "text": "      R O O T   A C C E S S",
+            "channel": "terminal"
+        },
+        {
+            "type": "print",
+            "text": "========================================",
+            "channel": "system"
+        },
+        {
+            "type": "wait",
+            "seconds": 0.5
+        },
+        {
+            "type": "voice",
+            "text": "Connection established. Awaiting authentication.",
+            "wait_for_audio": false
+        },
+        {
+            "type": "typewrite",
+            "text": "COMMANDS: [START] / [QUIT]",
+            "speed": 50,
+            "channel": "terminal"
+        },
+        {
+            "type": "require_command",
+            "commands": [
+                "start",
+                "quit",
+                "exit"
+            ],
+            "output_flag": "menu_choice",
+            "fail_msg": "Invalid auth command."
+        },
+        {
+            "type": "branch",
+            "if": {
+                "flag_equals": [
+                    "menu_choice",
+                    "start"
+                ]
+            },
+            "then": {
+                "goto_scene": "boot_sequence"
+            }
+        },
+        {
+            "type": "branch",
+            "if": {
+                "flag_equals": [
+                    "menu_choice",
+                    "quit"
+                ]
+            },
+            "then": {
+                "goto_step": 10
+            },
+            "else": {
+                "goto_step": 10
+            }
+        },
+        {
+            "type": "print",
+            "text": "SHUTTING DOWN...",
+            "channel": "system"
+        },
+        {
+            "type": "wait",
+            "seconds": 1.0
+        },
+        {
+            "type": "set_flag",
+            "key": "EXIT_GAME",
+            "value": true
+        }
+    ]
+}

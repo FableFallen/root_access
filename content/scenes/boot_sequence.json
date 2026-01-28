@@ -1,0 +1,130 @@
+{
+    "schema_version": 1,
+    "scene_id": "boot_sequence",
+    "steps": [
+        {
+            "type": "typewrite",
+            "text": "SYSTEM REBOOT...",
+            "speed": 20,
+            "channel": "system"
+        },
+        {
+            "type": "wait",
+            "seconds": 0.5
+        },
+        {
+            "type": "typewrite",
+            "text": "UPLINK TYPE: REMOTE CONTROL.",
+            "speed": 30,
+            "channel": "system"
+        },
+        {
+            "type": "wait",
+            "seconds": 0.5
+        },
+        {
+            "type": "typewrite",
+            "text": "ERROR: ADMIN PRIVILEGES CORRUPTED.",
+            "speed": 40,
+            "channel": "error"
+        },
+        {
+            "type": "voice",
+            "text": "Welcome, Candidate 492. Please synchronize to begin.",
+            "wait_for_audio": false
+        },
+        {
+            "type": "typewrite",
+            "text": "TYPE 'BOOT' TO SYNCHRONIZE.",
+            "speed": 50,
+            "channel": "terminal"
+        },
+        {
+            "type": "require_command",
+            "commands": [
+                "boot"
+            ],
+            "fail_msg": "System requires manual BOOT command."
+        },
+        {
+            "type": "print",
+            "text": ">> SYNCHRONIZATION COMPLETE.",
+            "channel": "system"
+        },
+        {
+            "type": "voice",
+            "text": "Synchronization complete. Vessel vitals critical."
+        },
+        {
+            "type": "wait",
+            "seconds": 1.0
+        },
+        {
+            "type": "print",
+            "text": "WARNING: VESSEL HEART RATE 0 BPM.",
+            "channel": "error"
+        },
+        {
+            "type": "typewrite",
+            "text": "ACTION REQUIRED: JUMPSTART HEART.",
+            "speed": 40,
+            "channel": "terminal"
+        },
+        {
+            "type": "require_command",
+            "commands": [
+                "jumpstart",
+                "shock"
+            ],
+            "fail_msg": "Critical failure imminent. JUMPSTART required."
+        },
+        {
+            "type": "print",
+            "text": ">> VOLTAGE SENT. HEART RATE: 120 BPM.",
+            "channel": "system"
+        },
+        {
+            "type": "voice",
+            "text": "Vessel awake. Threat detected."
+        },
+        {
+            "type": "wait",
+            "seconds": 1.0
+        },
+        {
+            "type": "print",
+            "text": "ALERT: HOSTILE ENTITY DETECTED (GOBLIN).",
+            "channel": "error"
+        },
+        {
+            "type": "typewrite",
+            "text": "TACTICAL OPTION: [ENGAGE]",
+            "speed": 30,
+            "channel": "terminal"
+        },
+        {
+            "type": "require_command",
+            "commands": [
+                "engage",
+                "attack",
+                "fight"
+            ],
+            "fail_msg": "Threat closing in. Must ENGAGE."
+        },
+        {
+            "type": "print",
+            "text": ">> THREAT ELIMINATED.",
+            "channel": "system"
+        },
+        {
+            "type": "voice",
+            "text": "Welcome to Eldoria, Operator."
+        },
+        {
+            "type": "typewrite",
+            "text": "END OF DEMO.",
+            "speed": 10,
+            "channel": "system"
+        }
+    ]
+}
