@@ -218,7 +218,8 @@ class SceneRunner:
         cmd = command.lower().strip()
         cs = self.game_state.combat
         
-        # Player Turn
+        # Player Turn Logic (Attack/Heal/etc) ... 
+        # (This part remains the same as Phase 3)
         if cmd == "attack":
             dmg = random.randint(3, 8)
             cs.enemy_hp -= dmg
@@ -229,7 +230,7 @@ class SceneRunner:
             self.game_state.append_history(f"> Systems repaired (+{amt} HP).", "system")
         elif cmd == "scan":
             self.game_state.append_history(f"TARGET: {cs.enemy_name} | HP: {cs.enemy_hp}/{cs.enemy_max_hp}", "info")
-            return # Scan doesn't cost a turn? Or maybe it does. Let's say it does.
+            return 
         elif cmd == "flee":
             if random.random() > 0.5:
                 self.game_state.append_history("ESCAPED SUCCESSFULLY.", "system")
@@ -252,14 +253,17 @@ class SceneRunner:
         self.game_state.hp -= enemy_dmg
         self.game_state.append_history(f"WARNING: Hull breach! Took {enemy_dmg} DMG. (Integrity: {self.game_state.hp})", "error")
 
-        # Check Loss
+        # --- UPDATED: Check Loss (Game Over Trigger) ---
         if self.game_state.hp <= 0:
             self.game_state.append_history("CRITICAL FAILURE. SYSTEM TERMINATED.", "error")
+            
+            # 1. Force end combat mode so we don't get stuck processing combat commands
+            self.game_state.combat.active = False
             self.game_state.mode = "cutscene" 
-            # In a real game, trigger Game Over scene here
-            # self.load("game_over") 
+            
+            # 2. Load the Game Over scene
+            self.load("game_over") 
 
     def _end_combat(self):
         self.game_state.combat.active = False
-        self.game_state.mode = "terminal" # Return to normal script flow
-        # The runner will pick up the NEXT step in the JSON on the next update
+        self.game_state.mode = "terminal"

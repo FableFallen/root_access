@@ -659,3 +659,235 @@ Rules:
 - [ ] Minimal inventory/quest/combat systems exist and are data-driven
 
 ---
+
+## Phase 4 Preview (What We’re Implementing)
+**Goal:** Keep the engine architecture stable while upgrading presentation + UX so the game feels “alive” and shippable.
+
+### Feature Buckets
+- **Visual Identity**
+  - CRT post-processing pass (scanlines / vignette / glow / optional chromatic split)
+  - Theme polish (consistent channel styles, spacing, framing)
+  - Optional “boot” animation layer (pure render effect, no logic changes)
+
+- **Game Feel / UX**
+  - Game Over flow (death detection → scene transition)
+  - Input/command affordances (help, hints, command aliases)
+  - Feedback improvements (errors, warnings, status readouts)
+
+- **Systems Polish**
+  - Combat UI feedback (HP display lines, enemy state lines, outcome messaging)
+  - Inventory/quest readability (pretty output, list commands, status formatting)
+
+- **Shipping Prep**
+  - Robust asset/path handling (dev vs packaged)
+  - Build script + packaging checklist
+  - Basic logging mode switch (dev vs release)
+
+---
+
+## Phase 4 Step-by-Step (Dev Lead Plan)
+
+> **Hard Rule:** Phase 4 must not break the architecture:
+> - Worker threads never touch `pygame.*`
+> - Rendering effects live in `RenderEngine` (post-process only)
+> - Story logic remains JSON-driven (no giant if/else in `main.py`)
+> - Audio stays event-driven (AUDIO_READY → main thread playback)
+
+---
+
+## Step 1 — Game Over Pipeline (Death → Scene)
+**Why first:** Highest impact, lowest risk, and it validates the “full loop.”
+
+### Files
+- `content/scenes/game_over.json` (New)
+- `story/scene_runner.py` (Update)
+- `core/models.py` (Optional minor additions)
+- `content/scenes/main_menu.json` (Optional: add “LOAD” or “RETRY”)
+
+### Implement
+1. **Trigger rule**
+   - When combat resolves and `game_state.hp <= 0`:
+     - set a flag like `DEAD = True`
+     - immediately `load("game_over")` OR branch on that flag cleanly
+2. **Game over scene content**
+   - Uses the same scene steps you already support (print, typewrite, wait, require_command, branch)
+   - Provides options:
+     - `MENU` → return to `main_menu`
+     - `RETRY` → load a “restart point” (could be last save or a reset)
+     - Optional: `LOAD` → restore from last save
+3. **State reset policy (explicit)**
+   - Decide what resets on retry:
+     - HP reset to max
+     - combat state cleared
+     - optional: clear inventory/quests OR restore from save snapshot
+
+### Success Criteria
+- You can intentionally die in a diagnostic combat and always reach `game_over`
+- No freeze / no crash / input still works
+- Returning to menu doesn’t require restarting the program
+
+---
+
+## Step 2 — RenderEngine CRT Pass (Post-Processing Layer)
+**Why now:** You have a working loop. Time to make it look “ROOT ACCESS.”
+
+### Files
+- `core/render_engine.py` (Update)
+- `core/theme.py` (Optional new helpers/constants)
+- `core/config.py` (Update flags)
+
+### Implement
+Add config toggles:
+- `CRT_ENABLED: bool = True`
+- `CRT_SCANLINES: bool = True`
+- `CRT_VIGNETTE: bool = True`
+- `CRT_GLOW: bool = False` (optional, heavier)
+- `CRT_CHROMA_SPLIT: bool = False` (optional)
+
+Add a **post-process pipeline** inside `RenderEngine.render()`:
+1. Render normal terminal scene to a `base_surface`
+2. Apply overlays/effects to `post_surface`
+3. Blit final result to `screen`
+
+**Recommended order**
+1. **Scanlines overlay**
+   - A transparent surface with horizontal lines every N pixels
+2. **Vignette overlay**
+   - Darkened corners using a prebuilt gradient surface (generated once)
+3. **Glow (optional)**
+   - Fake bloom: blur-ish via scaling down + back up, additive blend
+4. **Chroma split (optional)**
+   - Offset colored channels by 1px horizontally (subtle)
+
+### Success Criteria
+- Toggle CRT effects on/off via config without touching other systems
+- FPS remains stable (>= 55 most machines)
+- Text remains readable (no over-darkening)
+
+---
+
+## Step 3 — Terminal UX Polish (Readability + Commands)
+**Goal:** Make the terminal feel like a real OS interface.
+
+### Files
+- `story/scene_runner.py` (Update)
+- `core/models.py` (Optional)
+- `content/scenes/*.json` (Small edits)
+- `core/input_engine.py` (Optional)
+
+### Implement
+1. **Command quality-of-life**
+   - Command aliases: `quit` and `exit` treated the same
+   - `help` shows available commands based on current mode (terminal/combat/menu)
+2. **Status commands**
+   - `status` prints HP/tier/current scene
+   - `inv` prints inventory
+   - `quests` prints quest statuses
+3. **Formatting**
+   - Add consistent prefixes:
+     - `[SYS]`, `[ERR]`, `[INFO]`, `[WARN]` (you already do some of this)
+   - Add spacing lines between major events (optional)
+
+### Success Criteria
+- Player can discover controls without reading code
+- Output is consistently formatted
+- No mode confusion (combat vs terminal commands are clear)
+
+---
+
+## Step 4 — Combat Feedback Upgrade (Still Minimal, Much Clearer)
+**Goal:** Keep combat simple but make it feel intentional.
+
+### Files
+- `story/scene_runner.py` (Update)
+- `core/models.py` (Optional: combat helpers)
+- `content/scenes/phase3_validation.json` (Update for new messaging)
+
+### Implement
+- Add standardized combat header line:
+  - `TARGET: X | HP: a/b | YOUR HP: c/d`
+- Ensure every combat command prints:
+  - what happened
+  - updated HP totals
+- Ensure combat end prints:
+  - victory/defeat summary
+  - returns control cleanly to scene steps after combat
+
+### Success Criteria
+- Combat never silently changes numbers
+- Player always knows current HP totals
+- Exiting combat always restores `game_state.mode` properly
+
+---
+
+## Step 5 — Packaging & Build Prep (Windows .exe)
+**Goal:** Make it runnable outside VS Code.
+
+### Files
+- `build.py` or `build.md` (New)
+- `core/config.py` (Update: runtime paths)
+- `core/audio_cache.py` / `content/` path handling (Update as needed)
+
+### Implement
+1. **Path strategy**
+   - Resolve runtime base directory (dev vs packaged)
+   - Scenes path, saves path, audio_cache path all derived from base
+2. **Build**
+   - PyInstaller one-file or one-folder
+   - Include `content/` directory
+3. **Release toggle**
+   - `DEBUG_LOGGING` config flag
+
+### Success Criteria
+- Packaged build loads scenes
+- Save/load works
+- Audio cache directory created and reused
+- No missing-file crashes
+
+---
+
+# Phase 4 Final Checklist (Must Pass)
+**All items are required before Phase 4 is marked complete.**
+
+## A) Gameplay Flow
+- [ ] Death in combat reliably triggers `game_over.json`
+- [ ] From game_over, `MENU` returns to main menu without restarting program
+- [ ] Optional retry/load behavior works as designed (no soft-lock)
+
+## B) Visual Identity
+- [ ] CRT effects are implemented as a post-process pass in `RenderEngine`
+- [ ] CRT can be toggled via config without touching other systems
+- [ ] Text remains readable and FPS remains stable
+
+## C) UX / Commands
+- [ ] `help` displays meaningful info depending on mode
+- [ ] `status` prints core state (HP/tier/scene)
+- [ ] `inv` and `quests` show readable outputs (even if empty)
+- [ ] Consistent channel formatting (SYS/ERR/INFO/WARN)
+
+## D) Combat Clarity
+- [ ] Each combat turn prints action + damage + updated HP totals
+- [ ] Combat resolves cleanly to scene progression (victory continues, defeat goes game over)
+
+## E) Shipping Readiness
+- [ ] Paths work in dev mode and packaged mode
+- [ ] Packaged build runs and loads JSON scenes successfully
+- [ ] Save/load works in packaged build
+- [ ] Missing assets (ex: optional SFX) never crash the game
+
+---
+
+## Phase 5 Preview (What’s Next After Phase 4)
+- **Content Expansion**
+  - Larger story chapter packs (data-only updates)
+  - More encounters, branching outcomes, multiple endings
+- **RPG Depth (Still Data-Driven)**
+  - Items with stats/effects, better quest structure, enemy templates
+- **Audio/Presentation**
+  - Voice “directing” controls (emotion, pacing, emphasis)
+  - Optional subtitle timing alignment improvements
+- **Tools**
+  - Scene authoring helpers / validator CLI
+  - Automated “verification scenes” for regression tests
+
+---

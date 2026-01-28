@@ -51,7 +51,7 @@
         {
             "type": "combat_start",
             "enemy_name": "Training Drone",
-            "hp": 15
+            "hp": 50
         },
         {
             "type": "print",

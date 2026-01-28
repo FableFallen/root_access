@@ -1,0 +1,71 @@
+{
+    "schema_version": 1,
+    "scene_id": "game_over",
+    "steps": [
+        {
+            "type": "wait",
+            "seconds": 1.0
+        },
+        {
+            "type": "sfx",
+            "sfx_id": "glitch"
+        },
+        {
+            "type": "print",
+            "text": "CRITICAL FAILURE. SIGNAL LOST.",
+            "channel": "error"
+        },
+        {
+            "type": "voice",
+            "text": "Vessel integrity compromised. Terminating link.",
+            "voice_id": "system"
+        },
+        {
+            "type": "wait",
+            "seconds": 1.0
+        },
+        {
+            "type": "typewrite",
+            "text": "SYSTEM HALTED.",
+            "speed": 20,
+            "channel": "error"
+        },
+        {
+            "type": "print",
+            "text": "--------------------------------",
+            "channel": "system"
+        },
+        {
+            "type": "print",
+            "text": "COMMANDS: [MENU] / [QUIT]",
+            "channel": "terminal"
+        },
+        {
+            "type": "require_command",
+            "commands": [
+                "menu",
+                "quit",
+                "exit"
+            ],
+            "output_flag": "death_choice",
+            "fail_msg": "System unresponsive. Input MENU or QUIT."
+        },
+        {
+            "type": "branch",
+            "if": {
+                "flag_equals": [
+                    "death_choice",
+                    "menu"
+                ]
+            },
+            "then": {
+                "goto_scene": "main_menu"
+            }
+        },
+        {
+            "type": "set_flag",
+            "key": "EXIT_GAME",
+            "value": true
+        }
+    ]
+}
