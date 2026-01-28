@@ -1,0 +1,6 @@
+# Core Game Engine
+pygame>=2.5.0
+
+# Optional: Offline Text-to-Speech
+# Remove this line if you only use Mock or ElevenLabs audio
+pyttsx3>=2.90

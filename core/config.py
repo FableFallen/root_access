@@ -19,7 +19,7 @@ class GlobalConfig:
         "CRT_BRIGHT": (100, 255, 100), # New: High-intensity green
         "CRT_GREEN": (0, 255, 0),      # Standard
         "CRT_DIM": (0, 100, 0),        # Narration/Background
-        "BACKGROUND": (10, 10, 10),
+        "BACKGROUND": (255, 255, 225),
         "BLACK": (0, 0, 0),
         "WHITE": (255, 255, 255),      # Voice/Info
         "ERROR": (255, 50, 50),        # Alerts
@@ -35,6 +35,19 @@ class GlobalConfig:
         "narration": {"color": "CRT_DIM",    "prefix": ""},         # Descriptive text
         "info":      {"color": "GRAY",       "prefix": "[INFO] "},  # Silent help text
     })
+
+    # CRT Post-Processing
+    CRT_ENABLED: bool = True
+    CRT_SCANLINES: bool = True
+    CRT_VIGNETTE: bool = True
+
+    # NEW: Background Noise Intensity
+    # How visible is the static grain? (0-255 Alpha)
+    CRT_NOISE_ALPHA: int = 15
+    
+    # Intensity (0-255 Alpha)
+    CRT_SCANLINE_ALPHA: int = 60  # Subtle horizontal lines org: 40
+    CRT_VIGNETTE_ALPHA: int = 100 # Dark corners
 
     # System & Audio
     USE_MOCK_AUDIO: bool = False
